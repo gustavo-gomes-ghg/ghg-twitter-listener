@@ -5,6 +5,7 @@ const request = require("request");
 const path = require("path");
 const socketIo = require("socket.io");
 const http = require("http");
+const { Kafka } = require('kafkajs');
 
 const app = express();
 let port = process.env.PORT || 3000;
@@ -43,68 +44,18 @@ const authMessage = {
   type: "https://developer.twitter.com/en/docs/authentication",
 };
 
-const sleep = async (delay) => {
-  return new Promise((resolve) => setTimeout(() => resolve(true), delay));
-};
+// Kafka client setup
+const kafka = new Kafka({
+  clientId: 'ghg-twitter-stream-listener',
+  brokers: ['localhost:9092'],
+})
 
-app.get("/api/rules", async (req, res) => {
-  if (!BEARER_TOKEN) {
-    res.status(400).send(authMessage);
-  }
 
-  const token = BEARER_TOKEN;
-  const requestConfig = {
-    url: rulesURL,
-    auth: {
-      bearer: token,
-    },
-    json: true,
-  };
+// Kafka Producer
+const producer = kafka.producer();
 
-  try {
-    const response = await get(requestConfig);
 
-    if (response.statusCode !== 200) {
-      if (response.statusCode === 403) {
-        res.status(403).send(response.body);
-      } else {
-        throw new Error(response.body.error.message);
-      }
-    }
-
-    res.send(response);
-  } catch (e) {
-    res.send(e);
-  }
-});
-
-app.post("/api/rules", async (req, res) => {
-  if (!BEARER_TOKEN) {
-    res.status(400).send(authMessage);
-  }
-
-  const token = BEARER_TOKEN;
-  const requestConfig = {
-    url: rulesURL,
-    auth: {
-      bearer: token,
-    },
-    json: req.body,
-  };
-
-  try {
-    const response = await post(requestConfig);
-
-    if (response.statusCode === 200 || response.statusCode === 201) {
-      res.send(response);
-    } else {
-      throw new Error(response);
-    }
-  } catch (e) {
-    res.send(e);
-  }
-});
-
+// Stream main Login
 const streamTweets = (socket, token) => {
   let stream;
 
@@ -116,6 +67,16 @@ const streamTweets = (socket, token) => {
     timeout: 31000,
   };
 
+  // Connect to Kafka producer
+  try 
+  {
+    await producer.connect();
+  
+  } catch(e) 
+  { 
+    socket.emit("producerConnectError", e);
+  }
+
   try {
     const stream = request.get(config);
 
@@ -126,9 +87,39 @@ const streamTweets = (socket, token) => {
           if (json.connection_issue) {
             socket.emit("error", json);
             reconnect(stream, socket, token);
-          } else {
-            if (json.data) {
+          } else 
+          {
+            if (json.data) 
+            {
               socket.emit("tweet", json);
+
+              // Check for stream rule
+              const TAG = json.data?.matching_rules[0]?.tag;
+              let topic = undefined;
+              if ( TAG.indexOf('universe') > -1 ) {
+                topic = 'twitter.universe'
+              } else if ( TAG.indexOf('programming') > -1 ) {
+                topic = 'twitter.programming';
+              } else if ( TAG.indexOf('games') > -1 ) {
+                topic = 'twitter.games';
+              } else if ( TAG.indexOf('devjobs') > -1 ) {
+                topic = 'twitter.devjobs';
+              } else if ( TAG.indexOf('carracing') > -1 ) {
+                topic = 'twitter.carracing';
+              }
+
+              if ( !topic ) {
+                return;
+              }
+
+              // Send data to kafka
+              await producer.send({
+                topic: topic,
+                messages: [
+                  { value: 'Hello KafkaJS user!' },
+                ],
+              })
+            
             } else {
               socket.emit("authError", json);
             }
@@ -144,8 +135,16 @@ const streamTweets = (socket, token) => {
       });
   } catch (e) {
     socket.emit("authError", authMessage);
+    
+    // Disconnect from producer
+    await producer.disconnect()
   }
 };
+
+const sleep = async (delay) => {
+  return new Promise((resolve) => setTimeout(() => resolve(true), delay));
+};
+
 
 const reconnect = async (stream, socket, token) => {
   timeout++;
@@ -154,6 +153,8 @@ const reconnect = async (stream, socket, token) => {
   streamTweets(socket, token);
 };
 
+
+// Startup with opening streaming connection
 io.on("connection", async (socket) => {
   try {
     const token = BEARER_TOKEN;
@@ -163,6 +164,7 @@ io.on("connection", async (socket) => {
     io.emit("authError", authMessage);
   }
 });
+
 
 console.log("NODE_ENV is", process.env.NODE_ENV);
 
