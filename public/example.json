@@ -1,0 +1,31 @@
+{
+    "data":
+        {"id":"1537143234505461764",
+            "text":"@PaddyDrapes @YouTube “ #SpookyShiba is taking over social media and will soon take over the #BSC and #GameFi space. \nEnough said!! “ https://t.co/jTKMiFUwu0"
+        },
+        "matching_rules":[{"id":"1536785884254814208","tag":"tech_reply2"}]
+}
+{"data":{
+	
+	"id":"1537143280525352960","text":"I’m having fun with these new YouTube thumbnails. I’m a big goober, I shouldn’t ever be serious 😂. https://t.co/T7IjbPSwq0"},"matching_rules":[{"id":"1536785884254814208","tag":"tech_reply2"}]}
+
+
+{"data":{
+	
+	"attachments":{
+	
+	"media_keys":["7_1537144913703317504"]},"author_id":"1489608299464953859","context_annotations":[{"domain":{
+	
+	"id":"46","name":"Brand Category","description":"Categories within Brand Verticals that narrow down the scope of Brands"},"entity":{
+	
+	"id":"781974596752842752","name":"Services"}},{"domain":{
+	"id":"48","name":"Product","description":"Products created by Brands.  Examples: Ford Explorer, Apple iPhone."},"entity":{
+	"id":"1412579054855671809","name":"Google Innovation"}},{"domain":{
+	"id":"30","name":"Entities [Entity Service]","description":"Entity Service top level domain, every item that is in Entity Service should be in this domain"},"entity":{
+	"id":"848920371311001600","name":"Technology","description":"Technology and computing"}},{"domain":{
+	"id":"165","name":"Technology","description":"for individual and types of technology, e.g., food technology, 3D printing"},"entity":{
+	"id":"848920371311001600","name":"Technology","description":"Technology and computing"}}],"geo":{
+	},"id":"1537144967461646337","in_reply_to_user_id":"1370922090610577410","reply_settings":"everyone","source":"Twitter for Android","text":"@NFTshills #Minato will change the Crypto space and has such an amazing Team developing an entire Ecosystem about to do BIG THINGS.\n\n🌲 Pioneering Web3\n⛽️ Zero Gas Fees\n✅ CertiK Auditted/Approved \n🕵🏻 CertiK Full KYC’d \n\n#MinatoDao #ZeroGasMNTO \n#Metaverse  #Web3  @Minato_Kanji https://t.co/1OZFhXF12w"},"matching_rules":[{"id":"1536785884254814208","tag":"tech_reply2"}]}
+
+
+
