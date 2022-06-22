@@ -5,19 +5,20 @@ const socketIo = require("socket.io");
 const http = require("http");
 const { Kafka } = require('kafkajs');
 
-module.exports = {
-    twitterStreamApi
-}
 
-async function twitterStreamApi() 
+
+module.exports = {twitterStreamApi};
+
+
+async function twitterStreamApi(io) 
 {
-    const app = express();
+    /*const app = express();
 
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
     const server = http.createServer(app);
-    const io = socketIo(server);
+    const io = socketIo(server);*/
 
     const BEARER_TOKEN = process.env.TWITTER_BEARER_TOKEN;
 
@@ -76,6 +77,7 @@ async function twitterStreamApi()
         } catch(e) 
         { 
             socket.emit("producerConnectError", e);
+            last_message = {event: 'producerConnectError', message: e};
         }
 
         try {
@@ -89,6 +91,7 @@ async function twitterStreamApi()
                 const json = JSON.parse(data);
                 if (json.connection_issue) {
                     socket.emit("error", json);
+                    last_message = {event: 'error', message: json};
                     console.log(new Date(),' --- connection issue');
                     reconnect(stream, socket, token);
                 } else 
@@ -97,6 +100,7 @@ async function twitterStreamApi()
                     if (json.data) 
                     {
                     socket.emit("tweet", json);
+                    last_message = {event: 'tweet', message: json};
                     console.log(json);              
 
                     // check object fields
@@ -136,18 +140,21 @@ async function twitterStreamApi()
                     console.log('salvou com sucesso no kafka');
                     
                     } else {
-                        socket.emit("authError", json);
+                        socket.emit("authError", authMessage);
+                        last_message = {event: 'authError', message: authMessage};
                         console.log(new Date(),' --- authError');
                     }
                 }
                 } catch (e) {
                     socket.emit("heartbeat");
+                    last_message = {event: 'heartbeat', message: {}};
                     console.log(new Date(),' --- heartbeat');
                 }
             })
             .on("error", (error) => {
                 // Connection timed out
                 socket.emit("error", errorMessage);
+                last_message = {event: 'heartbeat', message: {}};
                 console.log(new Date(),' --- connection timed out');
                 reconnect(stream, socket, token);
             });

@@ -37,10 +37,11 @@
   },
   "scripts": {
     "start": "npm run development",
-    "development": "NODE_ENV=development concurrently --kill-others \"npm run server\"",
+    "development": "NODE_ENV=development concurrently --kill-others \"npm run server\" \"npm run api\"",
     "production": "npm run build && NODE_ENV=production npm run server",
     "client": "react-scripts start",
     "server": "node server/server.js",
+    "api": "node api/api.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
